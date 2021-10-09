@@ -6,7 +6,9 @@ from django.contrib.auth import authenticate
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User, auth
 from django.utils.translation import gettext as _
-from .models import user_profile,share_link
+from .models import user_profile, share_link, share_link_page
+from user.models import share_link, share_link_page
+import os, binascii
 
 from var_dump import var_dump
 from django.core.files.storage import FileSystemStorage
@@ -14,8 +16,12 @@ from core import settings
 from allauth.socialaccount.models import SocialAccount, SocialApp, SocialToken
 import requests
 import base64
-import os,binascii
-from user.models import share_link
+from django.http import HttpResponse
+
+from django.db import connection
+
+
+
 
 
 
@@ -131,30 +137,31 @@ def chanel(request):
                     reddit1 = {
                         'error': 'Lỗi Thời Gian Connect Reddit! Xin Vui Lòng Connect Lại Reddit',
                     }
-                    
-    headers12345 = {
-                    'Authorization': 'Basic ' + base64.b64encode(bytes('1472816:71a9912c21d3797bb360ae304b3843b812ca7fa8', "utf-8")).decode(),
-                    'Content-Type': 'application/x-www-form-urlencoded',
+        if(i['provider'] == 'pinterest'):
+            for k in user_profile.get_token_id(i['id']):
+                get_user_header = {
+                    'Authorization': 'Bearer ' + k.token
                 } 
-    data123 = {
-        'code': '77d745d63c25a0615d434570928d1f036523b8c2',
-        'redirect_uri': 'https://localhost:8000/',
-        'grant_type': 'authorization_code',
-    }   
-    urlvkl = 'https://api.pinterest.com/v3/oauth/access_token'     
+                try:
+                    r = requests.get('https://api.pinterest.com/v5/user_account', headers=get_user_header)
+                    pinterest_user = {
+                        'name': r.json()['username'],
+                        'image': r.json()['profile_image'],
+                        'url': 'https://www.pinterest.com/'+r.json()['username'],
+                        'type': r.json()['account_type']
+                    }
+                except ValueError:  # includes simplejson.decoder.JSONDecodeError
+                    pinterest_user = {
+                        'error': 'Lỗi Thời Gian Connect Pinterest! Xin Vui Lòng Connect Lại Pinterest',
+                    }
     
-    r = requests.put(urlvkl, headers=headers12345, data=data123)
-    
-    print(r.json())
 
-
-    #pina_AEATA6IWAAAP6AYAGCAACCWKQP4U67ABACGSOULLKW7772CEWIOIKM3NJKQUIB3YRDRLKJV2RHA7LYR76X3RLQSQUH6GEWIA                  
-    return render(request, 'main_chanel.html', {'user_1': user_1, 'user_2': user_2, 'social': social, 'account_provider': account_provider, 'page_fb': page_fb, 'abc': abc, 'twitter1': twitter1, 'reddit1': reddit1})
+              
+    return render(request, 'main_chanel.html', {'user_1': user_1, 'user_2': user_2, 'social': social, 'account_provider': account_provider, 'page_fb': page_fb, 'abc': abc, 'twitter1': twitter1, 'reddit1': reddit1, 'pinterest_user': pinterest_user})
 
 def update_user(request):
     user_logged = request.user
 
-    
     if (request.method == 'POST'):
         
         first_name = request.POST['first_name']
@@ -190,64 +197,98 @@ def update_user(request):
     else:
         
         return redirect('/user/profile/')
+    
+    
+def post_bai(request):
+    user_logged = request.user
+    user_1 = User.objects.get(id = user_logged.id)
+    user_2 = user_profile.objects.get(profile_user = user_logged.id)
+    social = settings.SOCIAL_ARR
+    account_provider = SocialAccount.objects.values('provider').filter(user_id = user_logged.id)
+    
+    data123 = user_profile.get_token_app_accounts_user_logded(user_logged.id)
+    print(data123)
+    
+    return render(request, 'main_post.html', {'user_1': user_1, 'user_2': user_2, 'social': social, 'account_provider': account_provider,})
+
 def create_index_user(request):
     share_link1 = share_link.objects.all()
-    return render(request, 'create_index.html',{'share_link1':share_link1})
+    return render(request, "create_index.html", {"share_link1": share_link1})
+
 
 def create_share_user(request):
-    
-    if request.method == 'POST':
-        name = request.POST['share_name']
-        code = binascii.b2a_hex(os.urandom(30))
-        address = request.POST['address']
-        phone = request.POST['phone']
-        user_id = request.POST['share_user_id']
-        
+
+    if request.method == "POST":
+        name = request.POST["share_name"]
+        code = (binascii.b2a_hex(os.urandom(30))).decode()
+        address = request.POST["address"]
+        phone = request.POST["phone"]
+        code_invite = (binascii.b2a_hex(os.urandom(10))).decode()
+        by_invite = request.POST["by_invite"]
         try:
-            obj = share_link.objects.get(user_id=user_id)
-            err_share_user_id = _('User đã tồn tại')
-            return render(request, 'create.html',{'err_share_user_id': err_share_user_id})
+            obj = share_link.objects.get(code=code)
+            err_share_user_id = _("Code đã tồn tại")
+            return render(request, "create.html", {"err_share_user_id": err_share_user_id})
         except share_link.DoesNotExist:
-            obj = share_link.objects.create(name=name, code=code, address=address, phone=phone,user_id=user_id)
+            obj = share_link.objects.create(name=name, code=code, address=address, phone=phone, code_invite=code_invite,by_invite = by_invite)
             obj.save()
-            return redirect('create-index-user')
+            return redirect("create-index-user")
     else:
-        return render(request, 'create.html')
-def edit_share_user(request,id):
-    data_share_link = share_link.objects.get(id=id)  
-    return render(request, 'edit_share.html',{'data_share_link':data_share_link})
-    
-def update_share_user(request,id):
-    
-    data_share_link = share_link.objects.get(id=id) 
-    if request.method == 'POST':
-        name = request.POST['share_name']
-        code = binascii.b2a_hex(os.urandom(30))
-        address = request.POST['address']
-        phone = request.POST['phone']
-        share_link.objects.filter(id=id).update(name=name, code=code, address=address, phone=phone)
-        return redirect('create-index-user')
+        return render(request, "create.html")
+
+
+def edit_share_user(request, id):
+    data_share_link = share_link.objects.get(id=id)
+    return render(request, "edit_share.html", {"data_share_link": data_share_link})
+
+
+def update_share_user(request, id):
+
+    data_share_link = share_link.objects.get(id=id)
+    if request.method == "POST":
+        name = request.POST["share_name"]
+        address = request.POST["address"]
+        phone = request.POST["phone"]
+        by_invite = request.POST["by_invite"]
+        share_link.objects.filter(id=id).update(name=name, address=address, phone=phone, by_invite=by_invite)
+        return redirect("create-index-user")
     else:
-        return render(request, 'edit_share.html',{'data_share_link':data_share_link})
-def delete_share_user(request,id):
-    
-        data_share_link = share_link.objects.get(id=id)
-        data_share_link.delete()
-        # obj = data_share_link.update(name=name, code=code, address=address, phone=phone)
-        # obj.save()
-        return redirect('create-index-user')
+        return render(request, "edit_share.html", {"data_share_link": data_share_link})
+
+
+def delete_share_user(request, id):
+
+    data_share_link = share_link.objects.get(id=id)
+    data_share_link.delete()
+    # obj = data_share_link.update(name=name, code=code, address=address, phone=phone)
+    # obj.save()
+    return redirect("create-index-user")
+
+
 def short_link(request):
-    return render(request, 'short_link.html')
+    return render(request, "short_link.html")
+
+
 def count_view(request):
-    if request.method == 'POST':
-        code = request.POST['code_user']
-        data_share_link = share_link.objects.get(code=code) 
-        if(data_share_link):
-            data_share_link = share_link.objects.get(code=code) 
-            count_view_site = data_share_link.count_view_site + 1
-            share_link.objects.filter(code=code).update(count_view_site=count_view_site)
-            return redirect('real-link')
+    if request.method == "POST":
+        code = request.POST["code_user"]
+        page_link = request.POST["page_link"]
+        data_link = share_link.objects.get(code=code)
+        if data_link:
+            share_link_data = share_link_page.objects.get(code=code)
+            try:
+                share_link_page.objects.filter(code=code,page_link=page_link).update(count_view_site = share_link_data.count_view_site + 1)
+                return render(request, "real_link.html")
+            except share_link_page.DoesNotExist:
+                obj = share_link_page.objects.create(page_link= page_link, code=code, user_id = 1, count_view_site = 1)
+                obj.save()
+                return render(request, "real_link.html")
+        else:
+            return render(request, "real_link.html")
     else:
-        return render(request, 'real_link.html')
+        return render(request, "real_link.html")
+
+
 def real_link(request):
-    return render(request, 'real_link.html')    
+    return render(request, "real_link.html")
+

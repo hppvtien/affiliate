@@ -29,7 +29,8 @@
             <th>Code</th>
             <th>Address</th>
             <th>Phone</th>
-            <th>User id</th>
+            <th>Code invite</th>
+            <th>Code Invited</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -43,7 +44,8 @@
             <td>{{ data.code }}</td>
             <td>{{ data.address }}</td>
             <td>{{ data.phone }}</td>
-            <td>{{ data.user_id }}</td>
+            <td>{{ data.code_invite }}</td>
+            <td>{{ data.by_invite }}</td>
             <td>
               <a
                 href="{% url 'edit-share-user' data.id %}"

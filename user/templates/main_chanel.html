@@ -146,6 +146,41 @@
                         <a href="{{ reddit1.url }}" target="_blank" class="button is-details">Xem Page</a>
                     </div>
                 </div>
+                {% endif %} {% if pinterest_user.error %} {{ pinterest_user.error }} {% else %}
+                <div class="flex-table-item">
+                    <div class="flex-table-cell is-meta" data-th="Status">
+                        <div class="pushed-mobile is-full has-text-right">
+                            <img src="{{ pinterest_user.image }}" alt="{{ pinterest_user.title }}">
+                        </div>
+                    </div>
+                    <div class="flex-table-cell is-meta" data-th="ID">
+                        <div class="meta pushed-mobile">
+                            <span>Tên Page</span>
+                            <span>{{ pinterest_user.type }}</span>
+                        </div>
+                    </div>
+                    <div class="flex-table-cell is-meta" data-th="Quantity">
+                        <div class="meta pushed-mobile">
+                            <span>ID Page</span>
+                            <span>{{ pinterest_user.name }}</span>
+                        </div>
+                    </div>
+                    <div class="flex-table-cell is-meta" data-th="Date">
+                        <div class="meta pushed-mobile">
+                            <span>Danh Mục Page</span>
+                            <span>{{ pinterest_user.desscription }}</span>
+                        </div>
+                    </div>
+                    <div class="flex-table-cell cell-end" data-th="">
+                        <a href="#" class="button button-cta btn-align primary-btn raised modal-trigger" data-modal="card-modal">Đăng Bài</a>
+                    </div>
+                    <div class="flex-table-cell cell-end" data-th="">
+                        <a href="{{ i.link }}" target="_blank" class="button is-details">Quản Lý Bài Viết</a>
+                    </div>
+                    <div class="flex-table-cell cell-end" data-th="">
+                        <a href="{{ pinterest_user.url }}" target="_blank" class="button is-details">Xem Page</a>
+                    </div>
+                </div>
                 {% endif %}
             </div>
         </div>
