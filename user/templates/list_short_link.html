@@ -1,0 +1,30 @@
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Stt</th>
+				<th>Page Link</th>
+				<th>Link Share</th>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for data in data_share_link_data %}
+			<tr>
+				<td>{{ forloop.counter }}</td>
+				<td>{{ data.page_link }}</td>
+				<td>{{ data.link_share }}</td>
+				<td>
+					<a href="{% url 'delete-short-ly' data.id %}" class="button is-small btn-align accent-btn raised rounded btn-outlined">Delete</a>
+					<a
+						href="javascript:;"
+						data-share="{{ data.code_user }}"
+						data-link="{{ data.page_link }}?asmid={{ data.code_user }}"
+						class="button is-small btn-align accent-btn raised rounded btn-outlined copy-btn"
+						>Copy</a
+					>
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>

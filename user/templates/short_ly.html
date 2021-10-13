@@ -8,7 +8,7 @@
 				<div class="container">
 					<div class="columns has-text-centered mt-60">
 						<div class="column is-8 is-offset-2 is-hero-caption is-centered">
-							<h1 class="title is-1 is-large">Short Link</h1>
+							<h1 class="title is-1 is-large">{{ code_user }}</h1>
 							<h2 class="subtitle is-5 pt-10 body-color">
 								<strong>Đợi để tự động chuyển hướng: <span id="time">Loading...</span></strong>
 							</h2>
@@ -24,36 +24,40 @@
 	</div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script type="text/javascript">
-	let user_code = window.location.href;
-	let url = new URL(user_code);
-	let slug = url.searchParams.get("asmid");
-	let csrfmiddlewaretoken = "{{ csrf_token }}";
-	var data_url = $(".countView").attr("data-url");
+<script>
+	{% comment %} setTimeout(function () {
+		let csrfmiddlewaretoken = "{{ csrf_token }}";
+		let code_user = '{{ code_user }}';
+		var data_url = '{{ link_rd }}';
+		var a_url = "{% url 'count-view-short-ly' %}";
+		$.ajax({
+			type: "POST",
+			url: "{% url 'count-view-short-ly' %}",
+			data: {
+				code_user: code_user,
+				csrfmiddlewaretoken: csrfmiddlewaretoken,
+				page_link: data_url,
+			},
+			success: function () {
+				console.log(code_user);
+				return false;
+				window.location.href = data_url;
+			},
+			error: function () {
+				console.log(a_url);
+				return false;
+				window.location.href = data_url;
+			},
+		});
 
-	$(".countView").on("click", function () {
-		if (slug == null) {
-			window.location.href = data_url;
-		} else {
-			$.ajax({
-				type: "POST",
-				url: "{% url 'count-view-short-ly' %}",
-				data: {
-					slug: slug,
-					csrfmiddlewaretoken: csrfmiddlewaretoken,
-					page_link: data_url,
-				},
-				success: function (data) {
-					window.location.href = data;
-				},
-				error: function (data) {
-					window.location.href = data_url;
-				},
-			});
-		}
-	});
-	var time = 1 * 10;
+	}, 1000); {% endcomment %}
+</script>
+<script type="text/javascript">
+	var time = 1 * 2;
 	setInterval(function () {
+		let csrfmiddlewaretoken = "{{ csrf_token }}";
+		let slug = "{{ slug }}";
+		var data_url = "{{ link_rd }}";
 		var seconds = time % 60;
 		var minutes = (time - seconds) / 60;
 		if (seconds.toString().length == 1) {
@@ -76,12 +80,12 @@
 				success: function (data) {
 					window.location.href = data;
 				},
-				error: function (data) {
+				error: function () {
 					window.location.href = data_url;
 				},
 			});
 		}
-	}, 1000); 
+	}, 1000);
 </script>
 
 {% include "footer.html" %}
