@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'sslserver',
     'ckeditor',
     'user',
+    'SuperAdmin'
 ]
 
 
@@ -103,7 +104,7 @@ DATABASES = {
     },
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'socical_22',
+        'NAME': 'affi',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': '127.0.0.1',

@@ -5,6 +5,9 @@ from user import views
 
 
 urlpatterns = [
+# admin
+
+
     path('register/', views.register, name='user-register'),
     path('login/', views.login, name='user-login'),
     path('logout/', views.logout, name='user-logout'),
@@ -27,4 +30,8 @@ urlpatterns = [
     path('count_view/', views.count_view, name='count-view'),
     path('count_view_short_ly/', views.count_view_short_ly, name='count-view-short-ly'),
     path('real_link', views.real_link, name='real-link'),
+
+
 ]
+
+

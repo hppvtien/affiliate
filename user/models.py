@@ -127,6 +127,11 @@ class share_link(models.Model):
     by_invite = models.TextField(default='No invite')
     address = models.TextField()
     phone = models.CharField(max_length=50)
+# class admin_share_link(models.Model):
+#     title = models.TextField()
+#     link = models.CharField(max_length=192)
+#     Percent = models.IntegerField()
+
 
 
 class share_link_page(models.Model):

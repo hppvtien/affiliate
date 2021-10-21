@@ -350,3 +350,16 @@ def count_view_short_ly(request):
             return render(request, "real_link.html")
     else:
         return render(request, "real_link.html")
+
+
+def dashboard(request):
+    return render(request,"admin_user/dashboard.html")
+
+def sign_up(request):
+    return render(request,"admin_user/sign-up.html")
+def sign_in(request):
+    return render(request,"admin_user/sign-in.html")
+def password_reset(request):
+    return render(request,"admin_user/password-reset.html")
+def new_password(request):
+    return render(request,"admin_user/new-password.html")
